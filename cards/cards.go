@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"reflect"
 	"strings"
 )
 
 type AllCards []*Card
 
 func (a *AllCards) String() string {
-	return "all cards 123"
+	return "all cards data"
 }
 
 func (a *AllCards) Set(value string) error {
@@ -26,7 +28,17 @@ func (a *AllCards) Set(value string) error {
 	category := card_details[1]
 	discount_categories := utils.StringToMapInt(card_details[2])
 	card_benefits := utils.StringToMapString(card_details[3])
-	*a = append(*a, NewCard(issuer, category, discount_categories, card_benefits))
+	new_card := NewCard(issuer, category, discount_categories, card_benefits)
+
+	// compare if two structs are same and skip adding the record
+	for _, val := range *a {
+		if reflect.DeepEqual(val, new_card) {
+			fmt.Println("skipping.. as data available for")
+			val.PrintCardInfo()
+			return nil
+		}
+	}
+	*a = append(*a, new_card)
 	// fmt.Printf("%v", (*a)[0])
 	return nil
 }
@@ -71,4 +83,17 @@ func (card *Card) PrintCardInfo() {
 
 func (card *Card) GetJson() ([]byte, error) {
 	return json.MarshalIndent(card, "", "\t")
+}
+
+func UnmarshallData(all_cards *AllCards) {
+	// unmarshal the total data that is already saved in prev files
+	content, err := os.ReadFile("card-app.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err_json := json.Unmarshal(content, all_cards)
+
+	if err_json != nil {
+		fmt.Println(err)
+	}
 }

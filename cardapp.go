@@ -15,18 +15,20 @@ func main() {
 	optDisplay := flag.Bool("display", false, "Display the credit card data that is already stored")
 	optSaveFile := flag.String("save-to", "", "File to save the credit card data")
 	var allCards cards.AllCards
+
+	// load initial data into allCards before option validation
+	cards.UnmarshallData(&allCards)
+
 	flag.Var(&allCards, "card-info", "Card information with '-' seperated values")
 
 	// parse the options from command line
 	flag.Parse()
 
-	fmt.Println("Thanks for using, Card Management App", *optDisplay, *optSaveFile)
-
 	// save the card information to a file
 	if len(*optSaveFile) > 0 {
 		cwd, _ := os.Getwd()
 		*optSaveFile = filepath.Join(cwd, *optSaveFile)
-		fmt.Println("Saving file to ", *optSaveFile, "location")
+		fmt.Println("Saving data to ", *optSaveFile, "location")
 
 		byt, err := json.MarshalIndent(allCards, "", "\t")
 		fd, err := os.Create(*optSaveFile)
@@ -43,26 +45,7 @@ func main() {
 		}
 	}
 
-	// unmarshal the total data that is already saved in prev files
-	var unmarshal_data cards.AllCards
-	content, err := os.ReadFile("card-app.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	// buf_reader := bufio.NewReader(read_file)
-	// var read_bytes = []byte{}
-	// bytes, err := buf_reader.Read(read_bytes)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// fmt.Println("total bytes read:", bytes, read_bytes)
-	err_json := json.Unmarshal(content, &unmarshal_data)
-	if err_json != nil {
-		fmt.Println(err)
-	}
-	allCards = append(allCards, unmarshal_data...)
-
+	// by default save all data into the file
 	byt, err := json.MarshalIndent(allCards, "", "\t")
 
 	if err != nil {
@@ -92,4 +75,5 @@ func main() {
 			fmt.Println(string(str_byte))
 		}
 	}
+	fmt.Println("Thanks for using, Card Management App")
 }
