@@ -70,9 +70,11 @@ func main() {
 
 	// display all cards information if -display flag is set to true
 	if *optDisplay {
-		for _, card := range allCards {
-			str_byte, _ := card.GetJson()
-			fmt.Println(string(str_byte))
+		for _, cards := range allCards {
+			for _, card := range cards {
+				str_byte, _ := card.GetJson()
+				fmt.Println(string(str_byte))
+			}
 		}
 	}
 	fmt.Println("Thanks for using, Card Management App")

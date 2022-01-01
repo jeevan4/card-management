@@ -10,13 +10,17 @@ import (
 	"strings"
 )
 
-type AllCards []*Card
+type AllCards map[string][]*Card
 
 func (a *AllCards) String() string {
 	return "all cards data"
 }
 
 func (a *AllCards) Set(value string) error {
+	if *a == nil {
+		// init the map for cards
+		*a = make(map[string][]*Card)
+	}
 	card_details := strings.Split(strings.Trim(value, "\n"), "-")
 	if len(card_details) < 4 {
 		err_str := fmt.Sprintf("input value : %v doesn't match the expected format", value)
@@ -31,14 +35,18 @@ func (a *AllCards) Set(value string) error {
 	new_card := NewCard(issuer, category, discount_categories, card_benefits)
 
 	// compare if two structs are same and skip adding the record
-	for _, val := range *a {
-		if reflect.DeepEqual(val, new_card) {
-			fmt.Println("skipping.. as data available for")
-			val.PrintCardInfo()
-			return nil
+	_, ok := (*a)[issuer]
+	if ok {
+		for _, val := range (*a)[issuer] {
+			if reflect.DeepEqual(val, new_card) {
+				fmt.Println("skipping.. as data available for")
+				val.PrintCardInfo()
+				return nil
+			}
 		}
 	}
-	*a = append(*a, new_card)
+
+	(*a)[issuer] = append((*a)[issuer], new_card)
 	// fmt.Printf("%v", (*a)[0])
 	return nil
 }
@@ -94,6 +102,6 @@ func UnmarshallData(all_cards *AllCards) {
 	err_json := json.Unmarshal(content, all_cards)
 
 	if err_json != nil {
-		fmt.Println(err)
+		fmt.Println(err_json)
 	}
 }
